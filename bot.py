@@ -127,7 +127,8 @@ def health_check():
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
         'users': len(user_activity),
-        'bot_name': bot.get_me().username
+        'bot_name': bot.get_me().username,
+        'port': os.environ.get('PORT', '5000')
     }, 200
 
 @app.route('/', methods=['GET'])
@@ -174,8 +175,14 @@ def set_webhook():
 if __name__ == '__main__':
     logger.info("Starting Echo Bot...")
     
-    # Get port from Railway environment
-    port = int(os.environ.get('PORT', 5000))
+    # Get port from Railway environment with fallback
+    try:
+        port = int(os.environ.get('PORT', 5000))
+    except (ValueError, TypeError):
+        logger.warning("Invalid PORT value, using default 5000")
+        port = 5000
+    
+    logger.info(f"Using port: {port}")
     
     # Set webhook if Railway URL is available
     webhook_set = set_webhook()
@@ -185,6 +192,7 @@ if __name__ == '__main__':
         # Start polling in a separate thread
         import threading
         polling_thread = threading.Thread(target=bot.infinity_polling)
+        polling_thread.daemon = True
         polling_thread.start()
     
     # Start Flask server
