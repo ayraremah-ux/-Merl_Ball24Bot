@@ -20,10 +20,9 @@ COPY bot.py .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=5000
 
-# Expose port
-EXPOSE $PORT
+# Expose port - Railway will set this dynamically
+EXPOSE 5000
 
-# Run the application with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "bot:app"]
+# Run the application with gunicorn using environment variable
+CMD gunicorn --bind 0.0.0.0:${PORT:-5000} bot:app
